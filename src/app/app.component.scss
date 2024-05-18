@@ -1,0 +1,57 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  font-family: "Roboto Light", sans-serif;
+
+  button {
+    width: 200px;
+    height: 30px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3c5b6e;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  h1 {
+    font-size: 35px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 15px;
+  }
+
+  input {
+    width: 300px;
+    height: 18px;
+    padding: 5px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    font-size: 14px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .row-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .column-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
