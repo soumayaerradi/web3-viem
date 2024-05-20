@@ -27,7 +27,7 @@
       class="row-container"
       *ngIf="network && chainId !== SEPOLIA_NETWORK.chainId"
     >
-      <button (click)="changeNetwork('0xaa36a7')">Connect Sepolia</button>
+      <button (click)="changeNetwork(SEPOLIA_NETWORK.chainId)">Connect Sepolia</button>
     </div>
   </div>
 
@@ -62,6 +62,9 @@
         <div class="row-container">
           <input type="text" [(ngModel)]="approveAmount" placeholder="Amount" />
           <button id="approveButton" (click)="approveTokens()">Approve</button>
+          <span *ngIf="approveInProcess">In process</span>
+          <span *ngIf="approveConfirmed">Transaction confirmed</span>
+          <span *ngIf="approveError">{{ approveError }}</span>
         </div>
       </div>
 
@@ -73,7 +76,12 @@
           placeholder="Address"
         />
         <input type="text" [(ngModel)]="transferAmount" placeholder="Amount" />
+        <div>
         <button id="transferButton" (click)="transferTokens()">Transfer</button>
+          <span *ngIf="transferInProcess">In process</span>
+          <span *ngIf="transferConfirmed">Transaction confirmed</span>
+          <span *ngIf="transferError">{{ transferError }}</span>
+        </div>
       </div>
     </div>
   </div>

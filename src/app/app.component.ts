@@ -44,10 +44,16 @@ export class AppComponent {
   tokenInfo: TokenInfo | undefined;
   allowanceAmount: string = '0';
   approveAmount: string = '0';
+  approveInProcess: boolean = false;
+  approveConfirmed: boolean = false;
+  approveError: string | undefined;
 
   // transfer
   transferAddress: `0x${string}` | undefined;
   transferAmount: string = '';
+  transferInProcess: boolean = false;
+  transferConfirmed: boolean = false;
+  transferError: string | undefined;
 
   SEPOLIA_NETWORK = {
     chainId: '0xaa36a7',
@@ -75,12 +81,18 @@ export class AppComponent {
     this.isWalletConnected = true;
   }
 
-  checkNetwork() {
-    const network = this.window.ethereum.networkVersion;
+  async checkNetwork() {
+    const network = await this.window.ethereum.request({
+      method: 'net_version',
+    });
+
     this.network = network;
     console.log('Network:', network);
 
-    const chainId = this.window.ethereum.chainId;
+    const chainId = await this.window.ethereum.request({
+      "method": "eth_chainId",
+      "params": []
+    });
     this.chainId = chainId;
 
     if (chainId === this.SEPOLIA_NETWORK.chainId) {
@@ -309,25 +321,35 @@ export class AppComponent {
     const addresses = await walletClient.getAddresses();
     console.log('Addresses:', addresses);
 
-    const request = await publicClient.simulateContract({
-      address: this.LINK_ADDRESS,
-      abi: parseAbi(['function approve(address, uint256)']),
-      functionName: 'approve',
-      args: [
-        this.APPROVE_CONTRACT,
-        parseUnits(this.approveAmount, this.tokenInfo?.decimals || 18),
-      ],
-      account: addresses[0],
-    });
-    console.log('Request:', request);
+    try {
+      const request = await publicClient.simulateContract({
+        address: this.LINK_ADDRESS,
+        abi: parseAbi(['function approve(address, uint256)']),
+        functionName: 'approve',
+        args: [
+          this.APPROVE_CONTRACT,
+          parseUnits(this.approveAmount, this.tokenInfo?.decimals || 18),
+        ],
+        account: addresses[0],
+      });
+      console.log('Request:', request);
 
-    const hash = await walletClient.writeContract(request.request);
-    console.log('Hash:', hash);
+      const hash = await walletClient.writeContract(request.request);
+      console.log('Hash:', hash);
 
-    const transactionReceipt = await publicClient.waitForTransactionReceipt({
-      hash: hash,
-    });
-    console.log('Transaction Receipt:', transactionReceipt);
+      this.approveInProcess = true;
+
+      const transactionReceipt = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      console.log('Transaction Receipt:', transactionReceipt);
+
+      this.approveInProcess = false;
+      this.approveConfirmed = true;
+    } catch (error: any) {
+      console.error('Error approving tokens:', error);
+      this.approveError = error.message.split('.')[0];
+    }
   }
 
   async transferTokens() {
@@ -345,24 +367,34 @@ export class AppComponent {
 
     const addresses = await walletClient.getAddresses();
 
-    const request = await publicClient.simulateContract({
-      address: this.LINK_ADDRESS,
-      abi: parseAbi(['function transfer(address, uint256)']),
-      functionName: 'transfer',
-      args: [
-        this.transferAddress,
-        parseUnits(this.transferAmount, this.tokenInfo?.decimals || 18),
-      ],
-      account: addresses[0],
-    });
-    console.log('Request:', request);
+    try {
+      const request = await publicClient.simulateContract({
+        address: this.LINK_ADDRESS,
+        abi: parseAbi(['function transfer(address, uint256)']),
+        functionName: 'transfer',
+        args: [
+          this.transferAddress,
+          parseUnits(this.transferAmount, this.tokenInfo?.decimals || 18),
+        ],
+        account: addresses[0],
+      });
+      console.log('Request:', request);
 
-    const hash = await walletClient.writeContract(request.request);
-    console.log('Hash:', hash);
+      const hash = await walletClient.writeContract(request.request);
+      console.log('Hash:', hash);
 
-    const transactionReceipt = await publicClient.waitForTransactionReceipt({
-      hash: hash,
-    });
-    console.log('Transaction Receipt:', transactionReceipt);
+      this.transferInProcess = true;
+
+      const transactionReceipt = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      console.log('Transaction Receipt:', transactionReceipt);
+
+      this.transferInProcess = false;
+      this.transferConfirmed = true;
+    } catch (error: any) {
+      console.error('Error transferring tokens:', error);
+      this.transferError = error.message.split('.')[0];
+    }
   }
 }
